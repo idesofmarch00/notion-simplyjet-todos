@@ -104,7 +104,7 @@ const filteredTasks = sortedTasks.filter((task) => {
     } else if (Array.isArray(filterValue)) {
       return filterValue.includes(taskValue);
     } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
-      const taskDate = new Date(taskValue);
+      const taskDate = new Date(task.dueDate.split('/').reverse().join('-'));
       return taskDate >= filterValue.startDate && taskDate <= filterValue.endDate;
     }
   }
@@ -141,6 +141,14 @@ const renderFilterInfo = () => {
   return null;
 };
 
+
+const resetFiltersAndSort = () => {
+  setSortColumn(null);
+  setSortDirection("asc");
+  setFilterColumn(null);
+  setFilterValue("");
+};
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between mb-4">
@@ -149,7 +157,12 @@ const renderFilterInfo = () => {
         {renderSortInfo()}
         {renderFilterInfo()}
         <FilterDropdown onFilter={handleFilter} />
-
+        <button
+          onClick={resetFiltersAndSort}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Reset All
+        </button>
       </div>
 
       {filteredTasks.length > 0 ? (
@@ -278,28 +291,32 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
             className="w-full p-2 border rounded"
           />
         );
-      case "dueDate":
-        return (
-          <div>
-      <DatePicker
-        selected={filterValues.dueDate?.startDate}
-        onChange={(dates) => {
-          const [start, end] = dates;
-          handleFilterChange("dueDate", { startDate: start, endDate: end });
-        }}
-        startDate={filterValues.dueDate?.startDate}
-        endDate={filterValues.dueDate?.endDate}
-        selectsRange
-        className="w-full p-2 border rounded mb-2"
-        placeholderText="Select date range"
-      />
-      {filterValues.dueDate?.startDate && filterValues.dueDate?.endDate && (
-        <div className="text-sm text-gray-600">
-          Selected range: {filterValues.dueDate.startDate.toLocaleDateString()} - {filterValues.dueDate.endDate.toLocaleDateString()}
-        </div>
-      )}
-    </div>
-        );
+        case "dueDate":
+          return (
+            <div>
+              <DatePicker
+                selected={filterValues.dueDate?.startDate}
+                onChange={(dates) => {
+                  const [start, end] = dates;
+                  handleFilterChange("dueDate", { 
+                    startDate: start ? new Date(start.setHours(0, 0, 0, 0)) : null, 
+                    endDate: end ? new Date(end.setHours(23, 59, 59, 999)) : null 
+                  });
+                }}
+                startDate={filterValues.dueDate?.startDate}
+                endDate={filterValues.dueDate?.endDate}
+                selectsRange
+                className="w-full p-2 border rounded mb-2"
+                placeholderText="Select date range"
+                dateFormat="dd/MM/yyyy"
+              />
+              {filterValues.dueDate?.startDate && filterValues.dueDate?.endDate && (
+                <div className="text-sm text-gray-600">
+                  Selected range: {filterValues.dueDate.startDate.toLocaleDateString()} - {filterValues.dueDate.endDate.toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          );
       case "priority":
         return (
           <div>
