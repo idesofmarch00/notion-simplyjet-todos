@@ -1,65 +1,24 @@
 import React, { useState } from "react";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-interface Task {
-  taskName: string;
-  dueDate: string;
-  priority: string;
-  status: string;
-  taskType: string;
-}
+import { Task } from "../../types/table";
+import tasks from "../../data/tasks"
+import SortDropdown from "../sort/sort";
+import FilterDropdown from "../filter/filter";
 
 const TaskTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<keyof Task | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filterColumn, setFilterColumn] = useState<keyof Task | null>(null);
-  const [filterValue, setFilterValue] = useState<string>("");
 
-  const tasks: Task[] = [
-    {
-      taskName: "Montoya Custom Cursor",
-      dueDate: "15/08/2024",
-      priority: "High",
-      status: "Done",
-      taskType: "New Feature"
-    },
-    {
-      taskName: "Montoya Navigation Menu",
-      dueDate: "22/08/2024",
-      priority: "High",
-      status: "In progress",
-      taskType: "New Feature"
-    },
-    {
-      taskName: "Montoya Header",
-      dueDate: "23/08/2024",
-      priority: "High",
-      status: "Done",
-      taskType: "New Feature"
-    },
-    {
-      taskName: "Montoya Delayed Scroll",
-      dueDate: "24/08/2024",
-      priority: "Medium",
-      status: "In progress",
-      taskType: "Bug"
-    },
-    {
-      taskName: "Filtering and Sorting on Users Dashboard",
-      dueDate: "30/08/2024",
-      priority: "Low",
-      status: "Not started",
-      taskType: "Improvement"
-    }
-  ];
+  const [filterValue, setFilterValue] = useState<unknown>("");
 
   const handleSort = (column: keyof Task, direction: "asc" | "desc") => {
     setSortColumn(column);
     setSortDirection(direction);
   };
 
-  const handleFilter = (column: keyof Task, value: string) => {
+
+  const handleFilter = (column: keyof Task, value: unknown) => {
     setFilterColumn(column);
     setFilterValue(value);
   };
@@ -100,17 +59,18 @@ const filteredTasks = sortedTasks.filter((task) => {
   if (filterColumn && filterValue !== null && filterValue !== undefined) {
     const taskValue = task[filterColumn];
     if (typeof filterValue === 'string') {
-      return taskValue.toString().toLowerCase().includes(filterValue.toLowerCase());
+      return String(taskValue).toLowerCase().includes(filterValue.toLowerCase());
     } else if (Array.isArray(filterValue)) {
       return filterValue.includes(taskValue);
-    } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
-      const taskDate = new Date(task.dueDate.split('/').reverse().join('-'));
-      return taskDate >= filterValue.startDate && taskDate <= filterValue.endDate;
+    } else if (typeof filterValue === 'object' && 'startDate' in filterValue && 'endDate' in filterValue) {
+      const taskDate = new Date(String(task.dueDate).split('/').reverse().join('-'));
+      const startDate = filterValue.startDate instanceof Date ? filterValue.startDate : new Date(String(filterValue.startDate));
+      const endDate = filterValue.endDate instanceof Date ? filterValue.endDate : new Date(String(filterValue.endDate));
+      return taskDate >= startDate && taskDate <= endDate;
     }
   }
   return true;
 });
-
 const renderSortInfo = () => {
   if (sortColumn) {
     return (
@@ -123,14 +83,14 @@ const renderSortInfo = () => {
 };
 
 const renderFilterInfo = () => {
-  if (filterColumn) {
+  if (filterColumn && filterValue !== null) {
     let filterText = '';
     if (typeof filterValue === 'string') {
       filterText = filterValue;
     } else if (Array.isArray(filterValue)) {
       filterText = filterValue.join(', ');
-    } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
-      filterText = `${filterValue.startDate.toLocaleDateString()} - ${filterValue.endDate.toLocaleDateString()}`;
+    } else if (typeof filterValue === 'object' && 'startDate' in filterValue && 'endDate' in filterValue) {
+      filterText = `${filterValue.startDate instanceof Date ? filterValue.startDate.toLocaleDateString() : ''} - ${filterValue.endDate instanceof Date ? filterValue.endDate.toLocaleDateString() : ''}`;
     }
     return (
       <button className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
@@ -139,10 +99,7 @@ const renderFilterInfo = () => {
     );
   }
   return null;
-};
-
-
-const resetFiltersAndSort = () => {
+};const resetFiltersAndSort = () => {
   setSortColumn(null);
   setSortDirection("asc");
   setFilterColumn(null);
@@ -193,244 +150,11 @@ const resetFiltersAndSort = () => {
     )}
     </div>
   );
-};
 
-const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState<keyof Task>("taskName");
-  const [selectedDirection, setSelectedDirection] = useState<"asc" | "desc">("asc");
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const handleSort = () => {
-    onSort(selectedColumn, selectedDirection);
-    toggleDropdown();
-  };
-
-  return (
-    <div className="relative">
-      <button
-        onClick={toggleDropdown}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Sort by Column
-      </button>
-      {isOpen && (
-        <div className="absolute left-0 mt-2 w-64 bg-white rounded-md shadow-lg z-10 p-4">
-          <select
-            value={selectedColumn}
-            onChange={(e) => setSelectedColumn(e.target.value as keyof Task)}
-            className="w-full mb-2 p-2 border rounded"
-          >
-            <option value="taskName">Task Name</option>
-            <option value="dueDate">Due Date</option>
-            <option value="priority">Priority</option>
-            <option value="status">Status</option>
-            <option value="taskType">Task Type</option>
-          </select>
-          <select
-            value={selectedDirection}
-            onChange={(e) => setSelectedDirection(e.target.value as "asc" | "desc")}
-            className="w-full mb-2 p-2 border rounded"
-          >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-          <button
-            onClick={handleSort}
-            className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Apply Sort
-          </button>
-        </div>
-      )}
-    </div>
-  );
 };
 
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState<keyof Task | null>(null);
-  const [filterValues, setFilterValues] = useState<Record<keyof Task, any>>({
-    taskName: "",
-    dueDate: { startDate: null, endDate: null },
-    priority: [],
-    status: [],
-    taskType: []
-  });
 
-  
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const handleColumnSelect = (column: keyof Task) => {
-    setSelectedColumn(column);
-  };
-
-  const handleFilterChange = (column: keyof Task, value: any) => {
-    setFilterValues(prev => ({ ...prev, [column]: value }));
-  };
-
-  const applyFilter = () => {
-    if (selectedColumn) {
-      onFilter(selectedColumn, filterValues[selectedColumn]);
-      toggleDropdown();
-    }
-  };
-
-  const renderFilterOptions = () => {
-    switch (selectedColumn) {
-      case "taskName":
-        return (
-          <input
-            type="text"
-            value={filterValues.taskName}
-            onChange={(e) => handleFilterChange("taskName", e.target.value)}
-            placeholder="Search task name"
-            className="w-full p-2 border rounded"
-          />
-        );
-        case "dueDate":
-          return (
-            <div>
-              <DatePicker
-                selected={filterValues.dueDate?.startDate}
-                onChange={(dates) => {
-                  const [start, end] = dates;
-                  handleFilterChange("dueDate", { 
-                    startDate: start ? new Date(start.setHours(0, 0, 0, 0)) : null, 
-                    endDate: end ? new Date(end.setHours(23, 59, 59, 999)) : null 
-                  });
-                }}
-                startDate={filterValues.dueDate?.startDate}
-                endDate={filterValues.dueDate?.endDate}
-                selectsRange
-                className="w-full p-2 border rounded mb-2"
-                placeholderText="Select date range"
-                dateFormat="dd/MM/yyyy"
-              />
-              {filterValues.dueDate?.startDate && filterValues.dueDate?.endDate && (
-                <div className="text-sm text-gray-600">
-                  Selected range: {filterValues.dueDate.startDate.toLocaleDateString()} - {filterValues.dueDate.endDate.toLocaleDateString()}
-                </div>
-              )}
-            </div>
-          );
-      case "priority":
-        return (
-          <div>
-            {["Low", "Medium", "High"].map(priority => (
-              <label key={priority} className="block">
-                <input
-                  type="checkbox"
-                  checked={filterValues.priority.includes(priority)}
-                  onChange={(e) => {
-                    const newPriorities = e.target.checked
-                      ? [...filterValues.priority, priority]
-                      : filterValues.priority.filter(p => p !== priority);
-                    handleFilterChange("priority", newPriorities);
-                  }}
-                /> {priority}
-              </label>
-            ))}
-          </div>
-        );
-      case "status":
-        return (
-          <div>
-            {["Not started", "In progress", "Done"].map(status => (
-              <label key={status} className="block">
-                <input
-                  type="checkbox"
-                  checked={filterValues.status.includes(status)}
-                  onChange={(e) => {
-                    const newStatuses = e.target.checked
-                      ? [...filterValues.status, status]
-                      : filterValues.status.filter(s => s !== status);
-                    handleFilterChange("status", newStatuses);
-                  }}
-                /> {status}
-              </label>
-            ))}
-          </div>
-        );
-      case "taskType":
-        return (
-          <div>
-            {["Improvement", "Bug", "New Feature"].map(type => (
-              <label key={type} className="block">
-                <input
-                  type="checkbox"
-                  checked={filterValues.taskType.includes(type)}
-                  onChange={(e) => {
-                    const newTypes = e.target.checked
-                      ? [...filterValues.taskType, type]
-                      : filterValues.taskType.filter(t => t !== type);
-                    handleFilterChange("taskType", newTypes);
-                  }}
-                /> {type}
-              </label>
-            ))}
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const isFilterValueEmpty = () => {
-    if (!selectedColumn) return true;
-    const value = filterValues[selectedColumn];
-    if (Array.isArray(value)) return value.length === 0;
-    if (typeof value === 'object' && value !== null) {
-      if ('startDate' in value && 'endDate' in value) {
-        return !value.startDate && !value.endDate;
-      }
-      return Object.keys(value).length === 0;
-    }
-    return !value && value !== 0;
-  };
-
-  return (
-    <div className="relative">
-      <button
-        onClick={toggleDropdown}
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Filter by Column
-      </button>
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-10 p-4">
-          <select
-            value={selectedColumn || ""}
-            onChange={(e) => handleColumnSelect(e.target.value as keyof Task)}
-            className="w-full mb-2 p-2 border rounded"
-          >
-            <option value="">Select Column</option>
-            <option value="taskName">Task Name</option>
-            <option value="dueDate">Due Date</option>
-            <option value="priority">Priority</option>
-            <option value="status">Status</option>
-            <option value="taskType">Task Type</option>
-          </select>
-          {selectedColumn && renderFilterOptions()}
-          <button
-            onClick={applyFilter}
-            disabled={isFilterValueEmpty()}
-            className={`w-full mt-2 font-bold py-2 px-4 rounded ${
-              isFilterValueEmpty()
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-500 hover:bg-green-700 text-white'
-            }`}
-          >
-            Apply Filter
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
 
 
 export default TaskTable;
