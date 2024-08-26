@@ -1,4 +1,4 @@
-import TaskTable from "./components/table/table/table"
+import TaskTable from "./components/table/table"
 
 function App() {
   return (
