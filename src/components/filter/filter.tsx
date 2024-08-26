@@ -51,7 +51,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
           return (
             <div>
               <DatePicker
-                selected={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate}
+                selected={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate || undefined}
                 onChange={(dates: [Date | null, Date | null]) => {
                   const [start, end] = dates;
                   handleFilterChange("dueDate", { 
@@ -59,8 +59,8 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
                     endDate: end ? new Date(end.setHours(23, 59, 59, 999)) : null 
                   });
                 }}
-                startDate={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate}
-                endDate={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.endDate}
+                startDate={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate || undefined}
+                endDate={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.endDate || undefined}
                 selectsRange
                 className="w-full p-2 border rounded mb-2"
                 placeholderText="Select date range"
@@ -135,8 +135,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
         default:
           return null;
       }
-    };
-  
+    };  
     return (
       <div className="relative" ref={dropdownRef}>
         <button
