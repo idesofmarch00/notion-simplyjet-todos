@@ -6,8 +6,8 @@ import tasks from "../../data/tasks"
 //types
 import { Task } from "../../types/table";
 //imports
-import SortDropdown from "../Sort";
-import FilterDropdown from "../Filter";
+import SortDropdown from "../sort";
+import FilterDropdown from "../filter";
 
 const TaskTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<keyof Task | null>(null);
