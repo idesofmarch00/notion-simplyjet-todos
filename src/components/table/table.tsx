@@ -96,12 +96,20 @@ const TaskTable: React.FC = () => {
   return 0;
 });
 
-  const filteredTasks = sortedTasks.filter((task) => {
-    if (filterColumn && filterValue) {
-      return task[filterColumn].toLowerCase().includes(filterValue.toLowerCase());
+const filteredTasks = sortedTasks.filter((task) => {
+  if (filterColumn && filterValue !== null && filterValue !== undefined) {
+    const taskValue = task[filterColumn];
+    if (typeof filterValue === 'string') {
+      return taskValue.toString().toLowerCase().includes(filterValue.toLowerCase());
+    } else if (Array.isArray(filterValue)) {
+      return filterValue.includes(taskValue);
+    } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
+      const taskDate = new Date(taskValue);
+      return taskDate >= filterValue.startDate && taskDate <= filterValue.endDate;
     }
-    return true;
-  });
+  }
+  return true;
+});
 
   return (
     <div className="container mx-auto p-4">
@@ -110,6 +118,7 @@ const TaskTable: React.FC = () => {
         <FilterDropdown onFilter={handleFilter} />
       </div>
 
+      {filteredTasks.length > 0 ? (
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -132,6 +141,9 @@ const TaskTable: React.FC = () => {
           ))}
         </tbody>
       </table>
+    ) : (
+      <div className="text-center py-4 text-gray-600">No results found</div>
+    )}
     </div>
   );
 };
@@ -195,11 +207,13 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
   const [selectedColumn, setSelectedColumn] = useState<keyof Task | null>(null);
   const [filterValues, setFilterValues] = useState<Record<keyof Task, any>>({
     taskName: "",
-    dueDate: null,
+    dueDate: { startDate: null, endDate: null },
     priority: [],
     status: [],
     taskType: []
   });
+
+  
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -232,12 +246,25 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
         );
       case "dueDate":
         return (
-          <DatePicker
-            selected={filterValues.dueDate}
-            onChange={(date) => handleFilterChange("dueDate", date)}
-            className="w-full p-2 border rounded"
-            placeholderText="Select due date"
-          />
+          <div>
+      <DatePicker
+        selected={filterValues.dueDate?.startDate}
+        onChange={(dates) => {
+          const [start, end] = dates;
+          handleFilterChange("dueDate", { startDate: start, endDate: end });
+        }}
+        startDate={filterValues.dueDate?.startDate}
+        endDate={filterValues.dueDate?.endDate}
+        selectsRange
+        className="w-full p-2 border rounded mb-2"
+        placeholderText="Select date range"
+      />
+      {filterValues.dueDate?.startDate && filterValues.dueDate?.endDate && (
+        <div className="text-sm text-gray-600">
+          Selected range: {filterValues.dueDate.startDate.toLocaleDateString()} - {filterValues.dueDate.endDate.toLocaleDateString()}
+        </div>
+      )}
+    </div>
         );
       case "priority":
         return (
@@ -301,6 +328,19 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
     }
   };
 
+  const isFilterValueEmpty = () => {
+    if (!selectedColumn) return true;
+    const value = filterValues[selectedColumn];
+    if (Array.isArray(value)) return value.length === 0;
+    if (typeof value === 'object' && value !== null) {
+      if ('startDate' in value && 'endDate' in value) {
+        return !value.startDate && !value.endDate;
+      }
+      return Object.keys(value).length === 0;
+    }
+    return !value && value !== 0;
+  };
+
   return (
     <div className="relative">
       <button
@@ -326,7 +366,12 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
           {selectedColumn && renderFilterOptions()}
           <button
             onClick={applyFilter}
-            className="w-full mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            disabled={isFilterValueEmpty()}
+            className={`w-full mt-2 font-bold py-2 px-4 rounded ${
+              isFilterValueEmpty()
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-green-500 hover:bg-green-700 text-white'
+            }`}
           >
             Apply Filter
           </button>
