@@ -59,18 +59,18 @@ const filteredTasks = sortedTasks.filter((task) => {
   if (filterColumn && filterValue !== null && filterValue !== undefined) {
     const taskValue = task[filterColumn];
     if (typeof filterValue === 'string') {
-      return taskValue.toString().toLowerCase().includes(filterValue.toLowerCase());
+      return String(taskValue).toLowerCase().includes(filterValue.toLowerCase());
     } else if (Array.isArray(filterValue)) {
       return filterValue.includes(taskValue);
-
     } else if (typeof filterValue === 'object' && 'startDate' in filterValue && 'endDate' in filterValue) {
-      const taskDate = new Date(task.dueDate.split('/').reverse().join('-'));
-      return taskDate >= filterValue.startDate && taskDate <= filterValue.endDate;
+      const taskDate = new Date(String(task.dueDate).split('/').reverse().join('-'));
+      const startDate = filterValue.startDate instanceof Date ? filterValue.startDate : new Date(String(filterValue.startDate));
+      const endDate = filterValue.endDate instanceof Date ? filterValue.endDate : new Date(String(filterValue.endDate));
+      return taskDate >= startDate && taskDate <= endDate;
     }
   }
   return true;
 });
-
 const renderSortInfo = () => {
   if (sortColumn) {
     return (
@@ -83,15 +83,14 @@ const renderSortInfo = () => {
 };
 
 const renderFilterInfo = () => {
-  if (filterColumn) {
+  if (filterColumn && filterValue !== null) {
     let filterText = '';
     if (typeof filterValue === 'string') {
       filterText = filterValue;
     } else if (Array.isArray(filterValue)) {
       filterText = filterValue.join(', ');
-
     } else if (typeof filterValue === 'object' && 'startDate' in filterValue && 'endDate' in filterValue) {
-      filterText = `${filterValue.startDate ? filterValue.startDate.toLocaleDateString() : ''} - ${filterValue.endDate ? filterValue.endDate.toLocaleDateString() : ''}`;
+      filterText = `${filterValue.startDate instanceof Date ? filterValue.startDate.toLocaleDateString() : ''} - ${filterValue.endDate instanceof Date ? filterValue.endDate.toLocaleDateString() : ''}`;
     }
     return (
       <button className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
@@ -100,10 +99,7 @@ const renderFilterInfo = () => {
     );
   }
   return null;
-
-};
-
-const resetFiltersAndSort = () => {
+};const resetFiltersAndSort = () => {
   setSortColumn(null);
   setSortDirection("asc");
   setFilterColumn(null);
