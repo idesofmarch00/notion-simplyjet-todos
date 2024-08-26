@@ -1,22 +1,24 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Task } from "../../types/table";
-import tasks from "../../data/tasks"
-import  useOutsideClick  from '../../hooks/useOutsideClick';
+import { Task } from "../../../types/table";
+import tasks from "../../../data/tasks"
+import  useOutsideClick  from '../../../hooks/useOutsideClick';
 
 const TaskTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<keyof Task | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filterColumn, setFilterColumn] = useState<keyof Task | null>(null);
-  const [filterValue, setFilterValue] = useState<string>("");
+
+  const [filterValue, setFilterValue] = useState<unknown>("");
 
   const handleSort = (column: keyof Task, direction: "asc" | "desc") => {
     setSortColumn(column);
     setSortDirection(direction);
   };
 
-  const handleFilter = (column: keyof Task, value: string) => {
+
+  const handleFilter = (column: keyof Task, value: unknown) => {
     setFilterColumn(column);
     setFilterValue(value);
   };
@@ -60,7 +62,8 @@ const filteredTasks = sortedTasks.filter((task) => {
       return taskValue.toString().toLowerCase().includes(filterValue.toLowerCase());
     } else if (Array.isArray(filterValue)) {
       return filterValue.includes(taskValue);
-    } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
+
+    } else if (typeof filterValue === 'object' && 'startDate' in filterValue && 'endDate' in filterValue) {
       const taskDate = new Date(task.dueDate.split('/').reverse().join('-'));
       return taskDate >= filterValue.startDate && taskDate <= filterValue.endDate;
     }
@@ -86,8 +89,9 @@ const renderFilterInfo = () => {
       filterText = filterValue;
     } else if (Array.isArray(filterValue)) {
       filterText = filterValue.join(', ');
-    } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
-      filterText = `${filterValue.startDate.toLocaleDateString()} - ${filterValue.endDate.toLocaleDateString()}`;
+
+    } else if (typeof filterValue === 'object' && 'startDate' in filterValue && 'endDate' in filterValue) {
+      filterText = `${filterValue.startDate ? filterValue.startDate.toLocaleDateString() : ''} - ${filterValue.endDate ? filterValue.endDate.toLocaleDateString() : ''}`;
     }
     return (
       <button className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
@@ -96,7 +100,10 @@ const renderFilterInfo = () => {
     );
   }
   return null;
-};const resetFiltersAndSort = () => {
+
+};
+
+const resetFiltersAndSort = () => {
   setSortColumn(null);
   setSortDirection("asc");
   setFilterColumn(null);
@@ -147,8 +154,8 @@ const renderFilterInfo = () => {
     )}
     </div>
   );
-};
 
+};
 const SortDropdown: React.FC<{ onSort: (column: keyof Task, direction: "asc" | "desc") => void }> = ({ onSort }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<keyof Task>("taskName");
@@ -264,8 +271,8 @@ const FilterDropdown: React.FC<{onFilter: (column: keyof Task, value: unknown) =
                 dateFormat="dd/MM/yyyy"
               />
               {filterValues.dueDate?.startDate && filterValues.dueDate?.endDate && (
-                <div className="text-sm text-gray-600">
-                  Selected range: {filterValues.dueDate.startDate.toLocaleDateString()} - {filterValues.dueDate.endDate.toLocaleDateString()}
+                <div className="text-xs text-gray-600">
+                  Selected range: {(filterValues.dueDate.startDate as Date).toLocaleDateString()} - {(filterValues.dueDate.endDate as Date).toLocaleDateString()}
                 </div>
               )}
             </div>
