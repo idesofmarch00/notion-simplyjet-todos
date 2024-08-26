@@ -202,6 +202,18 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
+  const handleColumnChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newColumn = e.target.value as keyof Task;
+    setSelectedColumn(newColumn);
+    onSort(newColumn, selectedDirection);
+  };
+
+  const handleDirectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDirection = e.target.value as "asc" | "desc";
+    setSelectedDirection(newDirection);
+    onSort(selectedColumn, newDirection);
+  };
+
   const handleSort = () => {
     onSort(selectedColumn, selectedDirection);
     toggleDropdown();
@@ -219,7 +231,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
         <div className="absolute left-0 mt-2 w-64 bg-white rounded-md shadow-lg z-10 p-4">
           <select
             value={selectedColumn}
-            onChange={(e) => setSelectedColumn(e.target.value as keyof Task)}
+            onChange={handleColumnChange}
             className="w-full mb-2 p-2 border rounded"
           >
             <option value="taskName">Task Name</option>
@@ -227,21 +239,15 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
             <option value="priority">Priority</option>
             <option value="status">Status</option>
             <option value="taskType">Task Type</option>
-          </select>
+            </select>
           <select
             value={selectedDirection}
-            onChange={(e) => setSelectedDirection(e.target.value as "asc" | "desc")}
+            onChange={handleDirectionChange}
             className="w-full mb-2 p-2 border rounded"
           >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
-          <button
-            onClick={handleSort}
-            className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Apply Sort
-          </button>
         </div>
       )}
     </div>
@@ -269,7 +275,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
   };
 
   const handleFilterChange = (column: keyof Task, value: any) => {
-    setFilterValues(prev => ({ ...prev, [column]: value }));
+    const newFilterValues = { ...filterValues, [column]: value };
+    setFilterValues(newFilterValues);
+    if (selectedColumn) {
+      onFilter(selectedColumn, newFilterValues[selectedColumn]);
+    }
   };
 
   const applyFilter = () => {
@@ -404,7 +414,13 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg z-10 p-4">
           <select
             value={selectedColumn || ""}
-            onChange={(e) => handleColumnSelect(e.target.value as keyof Task)}
+            onChange={(e) => {
+              const newColumn = e.target.value as keyof Task;
+              setSelectedColumn(newColumn);
+              if (newColumn) {
+                onFilter(newColumn, filterValues[newColumn]);
+              }
+            }}
             className="w-full mb-2 p-2 border rounded"
           >
             <option value="">Select Column</option>
@@ -415,17 +431,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
             <option value="taskType">Task Type</option>
           </select>
           {selectedColumn && renderFilterOptions()}
-          <button
-            onClick={applyFilter}
-            disabled={isFilterValueEmpty()}
-            className={`w-full mt-2 font-bold py-2 px-4 rounded ${
-              isFilterValueEmpty()
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-500 hover:bg-green-700 text-white'
-            }`}
-          >
-            Apply Filter
-          </button>
         </div>
       )}
     </div>
