@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Task } from "../../types/table";
 import tasks from "../../data/tasks"
+import  useOutsideClick  from '../../hooks/useOutsideClick';
 
 const TaskTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<keyof Task | null>(null);
@@ -170,13 +171,12 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
     onSort(selectedColumn, newDirection);
   };
 
-  const handleSort = () => {
-    onSort(selectedColumn, selectedDirection);
-    toggleDropdown();
-  };
+  const dropdownRef = useOutsideClick(() => {
+    setIsOpen(false);
+  });
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -222,8 +222,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
     taskType: []
   });
 
-  
-
   const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleFilterChange = (column: keyof Task, value: any) => {
@@ -233,6 +231,10 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
       onFilter(selectedColumn, newFilterValues[selectedColumn]);
     }
   };
+
+  const dropdownRef = useOutsideClick(() => {
+    setIsOpen(false);
+  });
 
   const renderFilterOptions = () => {
     switch (selectedColumn) {
@@ -335,7 +337,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
