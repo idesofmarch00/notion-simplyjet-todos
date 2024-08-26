@@ -1,58 +1,14 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-interface Task {
-  taskName: string;
-  dueDate: string;
-  priority: string;
-  status: string;
-  taskType: string;
-}
+import { Task } from "../../types/table";
+import tasks from "../../data/tasks"
 
 const TaskTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<keyof Task | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filterColumn, setFilterColumn] = useState<keyof Task | null>(null);
   const [filterValue, setFilterValue] = useState<string>("");
-
-  const tasks: Task[] = [
-    {
-      taskName: "Montoya Custom Cursor",
-      dueDate: "15/08/2024",
-      priority: "High",
-      status: "Done",
-      taskType: "New Feature"
-    },
-    {
-      taskName: "Montoya Navigation Menu",
-      dueDate: "22/08/2024",
-      priority: "High",
-      status: "In progress",
-      taskType: "New Feature"
-    },
-    {
-      taskName: "Montoya Header",
-      dueDate: "23/08/2024",
-      priority: "High",
-      status: "Done",
-      taskType: "New Feature"
-    },
-    {
-      taskName: "Montoya Delayed Scroll",
-      dueDate: "24/08/2024",
-      priority: "Medium",
-      status: "In progress",
-      taskType: "Bug"
-    },
-    {
-      taskName: "Filtering and Sorting on Users Dashboard",
-      dueDate: "30/08/2024",
-      priority: "Low",
-      status: "Not started",
-      taskType: "Improvement"
-    }
-  ];
 
   const handleSort = (column: keyof Task, direction: "asc" | "desc") => {
     setSortColumn(column);
@@ -270,22 +226,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
-  const handleColumnSelect = (column: keyof Task) => {
-    setSelectedColumn(column);
-  };
-
   const handleFilterChange = (column: keyof Task, value: any) => {
     const newFilterValues = { ...filterValues, [column]: value };
     setFilterValues(newFilterValues);
     if (selectedColumn) {
       onFilter(selectedColumn, newFilterValues[selectedColumn]);
-    }
-  };
-
-  const applyFilter = () => {
-    if (selectedColumn) {
-      onFilter(selectedColumn, filterValues[selectedColumn]);
-      toggleDropdown();
     }
   };
 
@@ -387,19 +332,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
       default:
         return null;
     }
-  };
-
-  const isFilterValueEmpty = () => {
-    if (!selectedColumn) return true;
-    const value = filterValues[selectedColumn];
-    if (Array.isArray(value)) return value.length === 0;
-    if (typeof value === 'object' && value !== null) {
-      if ('startDate' in value && 'endDate' in value) {
-        return !value.startDate && !value.endDate;
-      }
-      return Object.keys(value).length === 0;
-    }
-    return !value && value !== 0;
   };
 
   return (
