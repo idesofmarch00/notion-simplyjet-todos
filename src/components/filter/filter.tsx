@@ -136,6 +136,8 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
           return null;
       }
     };  
+
+    
     return (
       <div className="relative" ref={dropdownRef}>
         <button

@@ -1,9 +1,13 @@
+//dependencies
 import React, { useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { Task } from "../../types/table";
+//data
 import tasks from "../../data/tasks"
-import SortDropdown from "../sort/sort";
-import FilterDropdown from "../filter/filter";
+//types
+import { Task } from "../../types/table";
+//imports
+import SortDropdown from "../Sort";
+import FilterDropdown from "../Filter";
 
 const TaskTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<keyof Task | null>(null);
