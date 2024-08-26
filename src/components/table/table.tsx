@@ -111,11 +111,45 @@ const filteredTasks = sortedTasks.filter((task) => {
   return true;
 });
 
+const renderSortInfo = () => {
+  if (sortColumn) {
+    return (
+      <button className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm mr-2">
+        Sort: {sortColumn} ({sortDirection})
+      </button>
+    );
+  }
+  return null;
+};
+
+const renderFilterInfo = () => {
+  if (filterColumn) {
+    let filterText = '';
+    if (typeof filterValue === 'string') {
+      filterText = filterValue;
+    } else if (Array.isArray(filterValue)) {
+      filterText = filterValue.join(', ');
+    } else if (typeof filterValue === 'object' && filterValue.startDate && filterValue.endDate) {
+      filterText = `${filterValue.startDate.toLocaleDateString()} - ${filterValue.endDate.toLocaleDateString()}`;
+    }
+    return (
+      <button className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+        Filter: {filterColumn} ({filterText})
+      </button>
+    );
+  }
+  return null;
+};
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between mb-4">
+    
         <SortDropdown onSort={handleSort} />
+        {renderSortInfo()}
+        {renderFilterInfo()}
         <FilterDropdown onFilter={handleFilter} />
+
       </div>
 
       {filteredTasks.length > 0 ? (
