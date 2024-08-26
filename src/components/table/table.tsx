@@ -96,10 +96,7 @@ const renderFilterInfo = () => {
     );
   }
   return null;
-};
-
-
-const resetFiltersAndSort = () => {
+};const resetFiltersAndSort = () => {
   setSortColumn(null);
   setSortDirection("asc");
   setFilterColumn(null);
@@ -152,7 +149,7 @@ const resetFiltersAndSort = () => {
   );
 };
 
-const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
+const SortDropdown: React.FC<{ onSort: (column: keyof Task, direction: "asc" | "desc") => void }> = ({ onSort }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<keyof Task>("taskName");
   const [selectedDirection, setSelectedDirection] = useState<"asc" | "desc">("asc");
@@ -211,10 +208,10 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ onSort }) => {
 };
 
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
+const FilterDropdown: React.FC<{onFilter: (column: keyof Task, value: unknown) => void}> = ({ onFilter }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<keyof Task | null>(null);
-  const [filterValues, setFilterValues] = useState<Record<keyof Task, any>>({
+  const [filterValues, setFilterValues] = useState<Record<keyof Task, unknown>>({
     taskName: "",
     dueDate: { startDate: null, endDate: null },
     priority: [],
@@ -224,14 +221,13 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
-  const handleFilterChange = (column: keyof Task, value: any) => {
+  const handleFilterChange = (column: keyof Task, value: unknown) => {
     const newFilterValues = { ...filterValues, [column]: value };
     setFilterValues(newFilterValues);
     if (selectedColumn) {
       onFilter(selectedColumn, newFilterValues[selectedColumn]);
     }
   };
-
   const dropdownRef = useOutsideClick(() => {
     setIsOpen(false);
   });
@@ -242,7 +238,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
         return (
           <input
             type="text"
-            value={filterValues.taskName}
+            value={filterValues.taskName as string}
             onChange={(e) => handleFilterChange("taskName", e.target.value)}
             placeholder="Search task name"
             className="w-full p-2 border rounded"
@@ -281,11 +277,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
               <label key={priority} className="block">
                 <input
                   type="checkbox"
-                  checked={filterValues.priority.includes(priority)}
+                  checked={(filterValues.priority as string[]).includes(priority)}
                   onChange={(e) => {
                     const newPriorities = e.target.checked
-                      ? [...filterValues.priority, priority]
-                      : filterValues.priority.filter(p => p !== priority);
+                      ? [...(filterValues.priority as string[]), priority]
+                      : (filterValues.priority as string[]).filter(p => p !== priority);
                     handleFilterChange("priority", newPriorities);
                   }}
                 /> {priority}
@@ -300,11 +296,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
               <label key={status} className="block">
                 <input
                   type="checkbox"
-                  checked={filterValues.status.includes(status)}
+                  checked={(filterValues.status as string[]).includes(status)}
                   onChange={(e) => {
                     const newStatuses = e.target.checked
-                      ? [...filterValues.status, status]
-                      : filterValues.status.filter(s => s !== status);
+                      ? [...(filterValues.status as string[]), status]
+                      : (filterValues.status as string[]).filter((s:string) => s !== status);
                     handleFilterChange("status", newStatuses);
                   }}
                 /> {status}
@@ -319,11 +315,11 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
               <label key={type} className="block">
                 <input
                   type="checkbox"
-                  checked={filterValues.taskType.includes(type)}
+                  checked={(filterValues.taskType as string[]).includes(type)}
                   onChange={(e) => {
                     const newTypes = e.target.checked
-                      ? [...filterValues.taskType, type]
-                      : filterValues.taskType.filter(t => t !== type);
+                      ? [...(filterValues.taskType as string[]), type]
+                      : (filterValues.taskType as string[]).filter((t: string) => t !== type);
                     handleFilterChange("taskType", newTypes);
                   }}
                 /> {type}
@@ -370,6 +366,5 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
     </div>
   );
 };
-
 
 export default TaskTable;
