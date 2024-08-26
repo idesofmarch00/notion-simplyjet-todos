@@ -47,32 +47,34 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({ onFilter }) => {
               className="w-full p-2 border rounded"
             />
           );
-          case "dueDate":
-            return (
-              <div>
-                <DatePicker
-                  selected={filterValues.dueDate?.startDate}
-                  onChange={(dates) => {
-                    const [start, end] = dates;
-                    handleFilterChange("dueDate", { 
-                      startDate: start ? new Date(start.setHours(0, 0, 0, 0)) : null, 
-                      endDate: end ? new Date(end.setHours(23, 59, 59, 999)) : null 
-                    });
-                  }}
-                  startDate={filterValues.dueDate?.startDate}
-                  endDate={filterValues.dueDate?.endDate}
-                  selectsRange
-                  className="w-full p-2 border rounded mb-2"
-                  placeholderText="Select date range"
-                  dateFormat="dd/MM/yyyy"
-                />
-                {filterValues.dueDate?.startDate && filterValues.dueDate?.endDate && (
-                  <div className="text-xs text-gray-600">
-                    Selected range: {(filterValues.dueDate.startDate as Date).toLocaleDateString()} - {(filterValues.dueDate.endDate as Date).toLocaleDateString()}
-                  </div>
-                )}
-              </div>
-            );
+        case "dueDate":
+          return (
+            <div>
+              <DatePicker
+                selected={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate}
+                onChange={(dates: [Date | null, Date | null]) => {
+                  const [start, end] = dates;
+                  handleFilterChange("dueDate", { 
+                    startDate: start ? new Date(start.setHours(0, 0, 0, 0)) : null, 
+                    endDate: end ? new Date(end.setHours(23, 59, 59, 999)) : null 
+                  });
+                }}
+                startDate={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate}
+                endDate={(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.endDate}
+                selectsRange
+                className="w-full p-2 border rounded mb-2"
+                placeholderText="Select date range"
+                dateFormat="dd/MM/yyyy"
+              />
+              {(filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.startDate && 
+           (filterValues.dueDate as { startDate: Date | null, endDate: Date | null })?.endDate && (
+                <div className="text-xs text-gray-600">
+                  Selected range: {((filterValues.dueDate as { startDate: Date, endDate: Date }).startDate).toLocaleDateString()} - 
+                  {((filterValues.dueDate as { startDate: Date, endDate: Date }).endDate).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          );
         case "priority":
           return (
             <div>
